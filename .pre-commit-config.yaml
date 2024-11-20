@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Matthias Fehring <https://www.huessenbergnetz.de>
+#
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 exclude: ^(cmake/)
@@ -7,3 +11,8 @@ repos:
   hooks:
   - id: trailing-whitespace
   - id: end-of-file-fixer
+repos:
+  - repo: https://github.com/fsfe/reuse-tool
+    rev: v5.0.2
+    hooks:
+      - id: reuse
