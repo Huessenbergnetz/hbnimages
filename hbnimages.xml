@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2024 Matthias Fehring <https://www.huessenbergnetz.de>
+
+SPDX-License-Identifier: LGPL-3.0-or-later
+-->
+<extension type="library" method="upgrade">
+    <name>HBN Image Resizer Library</name>
+    <libraryname>HbnImages</libraryname>
+    <author>Matthias Fehring</author>
+    <creationDate>2024-11-20</creationDate>
+    <license>GNU Lesser General Public License version 3 or later</license>
+    <version>0.0.1</version>
+    <description></description>
+    <namespace path="src">HBN\Images</namespace>
+    <files>
+        <folder>src</folder>
+    </files>
+</extension>
