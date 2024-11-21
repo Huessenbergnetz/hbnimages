@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-3.0-or-later
 -->
 <extension type="library" method="upgrade">
     <name>HBN Image Resizer Library</name>
-    <libraryname>HbnImages</libraryname>
+    <libraryname>hbnimages</libraryname>
     <author>Matthias Fehring</author>
     <creationDate>2024-11-20</creationDate>
     <license>GNU Lesser General Public License version 3 or later</license>
