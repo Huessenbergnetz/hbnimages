@@ -18,6 +18,10 @@ use Joomla\Filesystem\Folder;
 
 class HbnImages
 {
+    public const ORIENTATION_LANDSCAPE = 0;
+    public const ORIENTATION_PORTRAIT = 1;
+    public const ORIENTATION_SQUARE = 2;
+
     private $options = null;
 
     private $http = null;
@@ -194,6 +198,39 @@ class HbnImages
         }
 
         if ($this->options['stripmetadata'] !== 0) {
+
+            switch ($this->imagick->getImageOrientation()) {
+                case \Imagick::ORIENTATION_TOPLEFT:
+                    break;
+                case \Imagick::ORIENTATION_TOPRIGHT:
+                    $this->imagick->flopImage();
+                    break;
+                case \Imagick::ORIENTATION_BOTTOMRIGHT:
+                    $this->imagick->rotateImage("#000", 180);
+                    break;
+                case \Imagick::ORIENTATION_BOTTOMLEFT:
+                    $this->imagick->flopImage();
+                    $this->imagick->rotateImage("#000", 180);
+                    break;
+                case \Imagick::ORIENTATION_LEFTTOP:
+                    $this->imagick->flopImage();
+                    $this->imagick->rotateImage("#000", -90);
+                    break;
+                case \Imagick::ORIENTATION_RIGHTTOP:
+                    $this->imagick->rotateImage("#000", 90);
+                    break;
+                case \Imagick::ORIENTATION_RIGHTBOTTOM:
+                    $this->imagick->flopImage();
+                    $this->imagick->rotateImage("#000", 90);
+                    break;
+                case \Imagick::ORIENTATION_LEFTBOTTOM:
+                    $this->imagick->rotateImage("#000", -90);
+                    break;
+                default: // Invalid orientation
+                    break;
+            }
+            $this->imagick->setImageOrientation(\Imagick::ORIENTATION_TOPLEFT);
+
             if (!$this->imagick->stripImage()) {
                 $this->log("Imagick: Failed to strip metadata from {$origFilePath}", Log::WARNING);
             }
@@ -287,6 +324,16 @@ class HbnImages
         $height = $img->getHeight();
 
         return $res;
+    }
+
+    public static function getOrientation(int $width, int $height) : int {
+        if ($width > $height) {
+            return HbnImages::ORIENTATION_LANDSCAPE;
+        } else if ($height > $width) {
+            return HbnImages::ORIENTATION_PORTRAIT;
+        } else {
+            return HbnImages::ORIENTATION_SQUARE;
+        }
     }
 
     public function getCacheFileName(Uri $src, int $width, int $height = 0, $type = 'webp') : string {
