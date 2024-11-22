@@ -192,45 +192,44 @@ class HbnImages
             return false;
         }
 
+        switch ($this->imagick->getImageOrientation()) {
+            case \Imagick::ORIENTATION_TOPLEFT:
+                break;
+            case \Imagick::ORIENTATION_TOPRIGHT:
+                $this->imagick->flopImage();
+                break;
+            case \Imagick::ORIENTATION_BOTTOMRIGHT:
+                $this->imagick->rotateImage("#000", 180);
+                break;
+            case \Imagick::ORIENTATION_BOTTOMLEFT:
+                $this->imagick->flopImage();
+                $this->imagick->rotateImage("#000", 180);
+                break;
+            case \Imagick::ORIENTATION_LEFTTOP:
+                $this->imagick->flopImage();
+                $this->imagick->rotateImage("#000", -90);
+                break;
+            case \Imagick::ORIENTATION_RIGHTTOP:
+                $this->imagick->rotateImage("#000", 90);
+                break;
+            case \Imagick::ORIENTATION_RIGHTBOTTOM:
+                $this->imagick->flopImage();
+                $this->imagick->rotateImage("#000", 90);
+                break;
+            case \Imagick::ORIENTATION_LEFTBOTTOM:
+                $this->imagick->rotateImage("#000", -90);
+                break;
+            default: // Invalid orientation
+                break;
+        }
+        $this->imagick->setImageOrientation(\Imagick::ORIENTATION_TOPLEFT);
+
         if (!$this->imagick->resizeImage($width, $height, \Imagick::FILTER_LANCZOS, 1)) {
             $this->log("Imagick: Failed to resize image {$origFilePath}", Log::ERROR);
             return false;
         }
 
         if ($this->options['stripmetadata'] !== 0) {
-
-            switch ($this->imagick->getImageOrientation()) {
-                case \Imagick::ORIENTATION_TOPLEFT:
-                    break;
-                case \Imagick::ORIENTATION_TOPRIGHT:
-                    $this->imagick->flopImage();
-                    break;
-                case \Imagick::ORIENTATION_BOTTOMRIGHT:
-                    $this->imagick->rotateImage("#000", 180);
-                    break;
-                case \Imagick::ORIENTATION_BOTTOMLEFT:
-                    $this->imagick->flopImage();
-                    $this->imagick->rotateImage("#000", 180);
-                    break;
-                case \Imagick::ORIENTATION_LEFTTOP:
-                    $this->imagick->flopImage();
-                    $this->imagick->rotateImage("#000", -90);
-                    break;
-                case \Imagick::ORIENTATION_RIGHTTOP:
-                    $this->imagick->rotateImage("#000", 90);
-                    break;
-                case \Imagick::ORIENTATION_RIGHTBOTTOM:
-                    $this->imagick->flopImage();
-                    $this->imagick->rotateImage("#000", 90);
-                    break;
-                case \Imagick::ORIENTATION_LEFTBOTTOM:
-                    $this->imagick->rotateImage("#000", -90);
-                    break;
-                default: // Invalid orientation
-                    break;
-            }
-            $this->imagick->setImageOrientation(\Imagick::ORIENTATION_TOPLEFT);
-
             if (!$this->imagick->stripImage()) {
                 $this->log("Imagick: Failed to strip metadata from {$origFilePath}", Log::WARNING);
             }
