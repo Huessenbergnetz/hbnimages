@@ -47,7 +47,7 @@ class HbnImages
         }
     }
 
-    public function resizeImage(Uri $src, int &$width, &$height = 0, string $type = 'webp', int $quality = 80) : string {
+    public function resizeImage(Uri $src, int &$width, int &$height = 0, string $type = 'webp', int $quality = 80) : string {
         $origFilePath = JPATH_ROOT . '/' . urldecode($src->getPath());
         if (!file_exists($origFilePath)) {
             return '';
@@ -70,6 +70,14 @@ class HbnImages
             $this->log("Get Resized Image: Found cache file at {$cacheFilePath}");
             if ($cacheMTime >= $origMTime) {
                 $this->log("Get Resized Image: Cache file is newer ({$cacheMTime} >= {$origMTime})");
+                // TODO: faster solution to get image dimensions
+                // try {
+                //     $img = new Image($cacheFilePath);
+                //     $width = $img->getWidth();
+                //     $height = $img->getHeight();
+                // } catch (\Exception $ex) {
+                //     $this->log("JImage: Failed to load cached image {$cacheFilePath} to get sizes: {$ex->getMessage()}", Log::WARNING);
+                // }
                 return $cacheFile;
             }
         }
