@@ -30,6 +30,27 @@ class HbnImages
 
     private $imagick = null;
 
+    /**
+     * Constructs a new %HbnImages object with the given @a $options.
+     *
+     * @par Currently supported options:
+     * @code{.php}
+     * $options = [
+     *     // relative cache directory
+     *     "cacheDir" => "images/hbnimages",
+     *     // image converter to use, currentyl supported: joomla, imagick and imginary
+     *     "converter" => "joomla",
+     *     // should metadata be stripped from the resized images? No if 0, otherwise yes.
+     *     "stripmetadata" => 0,
+     *     // host of the imaginary server
+     *     "imaginary_host" => null,
+     *     // port the imaginary server listens on
+     *     "imaginary_port" => null,
+     *     // path of the imaginary server api
+     *     "imaginary_path" => null
+     * ];
+     * @endcode
+     */
     function __construct(array $options = array()) {
 
         $defOptions = [
@@ -41,12 +62,31 @@ class HbnImages
         $this->options = array_merge($defOptions, $options);
     }
 
+    /**
+     * @brief Destructs the %HbnImages object and frees resources.
+     */
     function __destruct() {
         if ($this->imagick !== null) {
             $this->imagick->clear();
         }
     }
 
+    /**
+     * @brief Resizes the image at the @a $src URL to and returns the path to the created cache file on success.
+     *
+     * On success, the path to the resized image file relative to JPATH_ROOT will be returned. If something failed,
+     * an empty string will be returned.
+     *
+     * @note Only if the image is resized and not loaded from cache of already resized images, the width and height of
+     * the resized image will be written to @a $&width and @a $& height. Make sure to check on your consuming function,
+     * that both values are greater then @c 0, if you need actual resized image dimension.
+     *
+     * @param $src[in]  Joomla\CMS\Uri\Uri  Url for the source image to resize.
+     * @param $&width[in,out]   int         Target width for the image.
+     * @param $&height[in,out]  int         Target height for the image.
+     * @param $type             string      Target image type. Supported types are 'webp', 'avif', 'jpeg' and 'png'.
+     * @param $quality          int         Target image quality.
+     */
     public function resizeImage(Uri $src, int &$width, int &$height = 0, string $type = 'webp', int $quality = 80) : string {
         $origFilePath = JPATH_ROOT . '/' . urldecode($src->getPath());
         if (!file_exists($origFilePath)) {
@@ -108,6 +148,21 @@ class HbnImages
         return $cacheFile;
     }
 
+    /**
+     * @brief Resizes an image with Imaginary and returns @c true on success, otherwise @c false.
+     *
+     * This will resize the image at @a $srcUrl to the given @a $width and @a $size and writes it to
+     * @a $caceFilePath. If @a $width &gt; @c 0, the image will be resized to @a $width preserving aspect ratio. If
+     * @a $height &gt; @c 0, the image will be resized to @a $height preservinge aspect ratio. On success, the
+     * target width and height will be written back to @a $width and @a $height.
+     *
+     * @param $cacheFilePath[in]    string Absolute path for the resized cache file to create.
+     * @param $origFilePath[in]     string Absolute path to the image file to resize.
+     * @param $&widht[in,out]       int    Target width for the image.
+     * @param $&height[in,out]      int    Target height for the image.
+     * @param $type[in]             string Target type. Supported types are 'webp', 'avif', 'jpeg' and 'png'.
+     * @param $quality[in]          int    Target quality.
+     */
     public function resizeImageWithImaginary(string $cacheFilePath, string $srcUrl, int &$width, int &$height, string $type = 'webp', int $quality = 80) : bool {
         if ($this->imaginary_url === null) {
             $host = $this->options['imaginary_host'] ?? 'http://localhost';
@@ -176,6 +231,21 @@ class HbnImages
         return true;
     }
 
+    /**
+     * @brief Resizes an image with Image Magick and returns @c true on success, otherwise @c false.
+     *
+     * This will resize the image at @a $origFilePath to the given @a $width and @a $size and writes it to
+     * @a $caceFilePath. If @a $width &gt; @c 0, the image will be resized to @a $width preserving aspect ratio. If
+     * @a $height &gt; @c 0, the image will be resized to @a $height preservinge aspect ratio. On success, the
+     * target width and height will be written back to @a $width and @a $height.
+     *
+     * @param $cacheFilePath[in]    string Absolute path for the resized cache file to create.
+     * @param $origFilePath[in]     string Absolute path to the image file to resize.
+     * @param $&widht[in,out]       int    Target width for the image.
+     * @param $&height[in,out]      int    Target height for the image.
+     * @param $type[in]             string Target type. Supported types are 'webp', 'avif', 'jpeg' and 'png'.
+     * @param $quality[in]          int    Target quality.
+     */
     public function resizeImageWithImagick(string $cacheFilePath, string $origFilePath, int &$width, int &$height, string $type = 'webp', int $quality = 80) : bool {
         $this->log("Imagick: Trying to get resized image: {$origFilePath}");
 
@@ -263,6 +333,21 @@ class HbnImages
         return true;
     }
 
+    /**
+     * @brief Resizes an image with the Joomla! Image class and returns @c true on success, otherwise @c false.
+     *
+     * This will resize the image at @a $origFilePath to the given @a $width and @a $size and writes it to
+     * @a $caceFilePath. If @a $width &gt; @c 0, the image will be resized to @a $width preserving aspect ratio. If
+     * @a $height &gt; @c 0, the image will be resized to @a $height preservinge aspect ratio. On success, the
+     * target width and height will be written back to @a $width and @a $height.
+     *
+     * @param $cacheFilePath[in]    string Absolute path for the resized cache file to create.
+     * @param $origFilePath[in]     string Absolute path to the image file to resize.
+     * @param $&widht[in,out]       int    Target width for the image.
+     * @param $&height[in,out]      int    Target height for the image.
+     * @param $type[in]             string Target type. Supported types are 'webp', 'avif', 'jpeg' and 'png'.
+     * @param $quality[in]          int    Target quality.
+     */
     public function resizeImageWithJoomla(string $cacheFilePath, string $origFilePath, int &$width, int &$height, string $type = 'webp', int $quality = 80) : bool {
         $this->log("JImage: Trying to get resized image: {$origFilePath}");
 
@@ -333,6 +418,9 @@ class HbnImages
         return $res;
     }
 
+    /**
+     * @brief Returns the image orientation based on @a $width and @a $height.
+     */
     public static function getOrientation(int $width, int $height) : int {
         if ($width > $height) {
             return HbnImages::ORIENTATION_LANDSCAPE;
@@ -343,6 +431,11 @@ class HbnImages
         }
     }
 
+    /**
+     * @brief Returns the cache file name for @a $src as relative path to JPATH_ROOT.
+     *
+     * If something failes, an empty string will be returned.
+     */
     public function getCacheFileName(Uri $src, int $width, int $height = 0, $type = 'webp') : string {
         if ($width > 0) {
             return $this->options['cacheDir'] . '/w' . (string)$width . '/' . File::stripExt($src->getPath()) . '.' . $type;
@@ -353,6 +446,31 @@ class HbnImages
         }
     }
 
+    /**
+     * @brief Returns the image dimensions for the file at @a $localPath as a named array.
+     *
+     * @a $localPath has to be relative. The function will prepend the JPATH_ROOT. The returned
+     * array will be empty if something failed. On success it will contain the two named values
+     * "width" and "height".
+     */
+    public static function getImageDimensions(string $localPath) : array {
+        $localFullPath = JPATH_ROOT . '/' . urldecode($localPath);
+        try {
+            $img = new Image($localFullPath);
+        } catch (\Exception $ex) {
+            $this->log("JImage: Failed to load image {$localFullPath}: {$ex->getMessage()}", Log::ERROR);
+            return [];
+        }
+
+        return ["width" => $img->getWidth(), "height" => $img->getHeight()];
+    }
+
+    /**
+     * @brief Creates the cache dir for the @a $cacheFilePath and returns @c true on success.
+     *
+     * This will create the complete directory structure needed by @a $cacheFilePath below JPATH_ROOT.
+     * @a $cacheFilePath has to be relatative.
+     */
     private function createCacheDir(string $cacheFilePath) : bool {
         $dirName = dirname($cacheFilePath);
         if (file_exists(JPATH_ROOT . '/' . $dirName)) {
@@ -377,7 +495,7 @@ class HbnImages
             $indexFile = $currentPath . '/index.html';
             if (!file_exists($indexFile)) {
                 if (!File::write($indexFile, '<!DOCTYPE html><title></title>')) {
-                    $this->log("Creata Cache Dir: Failed to write index file {$indexFile}", Log::ERROR);
+                    $this->log("Create Cache Dir: Failed to write index file {$indexFile}", Log::ERROR);
                     return false;
                 }
             }
@@ -386,6 +504,9 @@ class HbnImages
         return true;
     }
 
+    /**
+     * @brief Logs @a $message with @a $prio to the Joomla! log.
+     */
     private function log(string $message, int $prio = Log::DEBUG) : void {
         Log::add($message, $prio, 'hbn.library.hbnimages');
     }
