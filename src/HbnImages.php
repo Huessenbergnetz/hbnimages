@@ -453,7 +453,7 @@ class HbnImages
      * array will be empty if something failed. On success it will contain the two named values
      * "width" and "height".
      */
-    public static function getImageDimensions(string $localPath) : array {
+    public function getImageDimensions(string $localPath) : array {
         $localFullPath = JPATH_ROOT . '/' . urldecode($localPath);
         try {
             $img = new Image($localFullPath);
@@ -463,6 +463,32 @@ class HbnImages
         }
 
         return ["width" => $img->getWidth(), "height" => $img->getHeight()];
+    }
+
+    /** @brief Deletes all thumbnails for the file identified by source @a path.
+     */
+    public function deleteThumbnails(string $path) : void {
+        $sizeFolders = Folder::folders(JPATH_ROOT . '/' . $this->options['cacheDir']);
+        $sfstr = print_r($sizeFolders, true);
+        $this->log("Size Folders: {$sfstr}");
+
+        $pathWithoutExt = File::stripExt($path);
+
+        $exts = ["jpeg", "webp", "avif", "png"];
+
+        foreach ($sizeFolders as $sizeFolder) {
+            foreach ($exts as $ext) {
+                $_path = JPATH_ROOT . '/' . $this->options['cacheDir'] . '/' . $sizeFolder . '/' . $pathWithoutExt . '.' . $ext;
+                if (file_exists($_path)) {
+                    $this->log("Deleting thumbnail {$_path}");
+                    try {
+                        File::delete($_path);
+                    } catch (\Exception $ex) {
+                        $this->log("Failed to delete thumbnail at {$_path}: {$ex->getMessage()}", Log::ERROR);
+                    }
+                }
+            }
+        }
     }
 
     /**
